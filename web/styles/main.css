@@ -1,0 +1,439 @@
+/* ComfyUI AI Assistant 样式 */
+:root {
+    --ai-primary-color: #2a5298;
+    --ai-secondary-color: #3a62a8;
+    --ai-bg-color: #1e1e2e;
+    --ai-text-color: #fff;
+    --ai-border-color: #444;
+    --ai-input-bg: #333;
+    --ai-user-msg-bg: #2a5298;
+    --ai-assistant-msg-bg: #383838;
+}
+
+/* 主容器 */
+.ai-assistant-container {
+    position: fixed;
+    z-index: 9999;
+    font-family: Arial, sans-serif;
+    color: var(--ai-text-color);
+    transition: all 0.3s ease;
+    background-color: var(--ai-bg-color);
+    border-radius: 8px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+}
+
+/* 浮动按钮 */
+.ai-assistant-floating-button {
+    position: fixed;
+    z-index: 9998;
+    cursor: pointer;
+    background: rgba(42, 82, 152, 0.9);
+    border-radius: 50%;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
+    transition: transform 0.3s ease, background-color 0.3s ease;
+    user-select: none;
+}
+
+.ai-assistant-floating-button:hover {
+    background: var(--ai-secondary-color);
+    transform: scale(1.1);
+}
+
+.ai-assistant-floating-button button {
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+    border: none;
+    background: transparent;
+    color: var(--ai-text-color);
+    font-size: 24px;
+    cursor: pointer;
+    outline: none;
+}
+
+/* 窗口标题栏 */
+.ai-assistant-titlebar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px 15px;
+    background-color: var(--ai-primary-color);
+    color: var(--ai-text-color);
+    cursor: move;
+    user-select: none;
+}
+
+.ai-assistant-title {
+    font-weight: bold;
+    flex: 1;
+}
+
+.ai-assistant-controls {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.ai-assistant-close {
+    background: none;
+    border: none;
+    color: var(--ai-text-color);
+    font-size: 20px;
+    cursor: pointer;
+    padding: 0 8px;
+    line-height: 1;
+}
+
+.ai-assistant-close:hover {
+    opacity: 0.8;
+}
+
+.ai-assistant-opacity-slider {
+    width: 100px;
+    height: 4px;
+    -webkit-appearance: none;
+    background: var(--ai-border-color);
+    border-radius: 2px;
+    outline: none;
+}
+
+.ai-assistant-opacity-slider::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    width: 12px;
+    height: 12px;
+    background: var(--ai-text-color);
+    border-radius: 50%;
+    cursor: pointer;
+}
+
+.ai-assistant-opacity-slider::-moz-range-thumb {
+    width: 12px;
+    height: 12px;
+    background: var(--ai-text-color);
+    border-radius: 50%;
+    cursor: pointer;
+    border: none;
+}
+
+/* 内容区域 */
+.ai-assistant-content {
+    display: flex;
+    height: calc(100% - 40px);
+    overflow: hidden;
+}
+
+/* 左侧菜单 */
+.ai-assistant-menu {
+    width: 48px;
+    background: var(--ai-bg-color);
+    border-right: 1px solid var(--ai-border-color);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 10px 0;
+    gap: 10px;
+}
+
+.ai-assistant-menu-item {
+    width: 32px;
+    height: 32px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    border-radius: 4px;
+    transition: background 0.3s;
+}
+
+.ai-assistant-menu-item:hover {
+    background: rgba(255, 255, 255, 0.1);
+}
+
+.ai-assistant-menu-item.active {
+    background: var(--ai-primary-color);
+}
+
+/* 右侧内容区域 */
+.ai-assistant-content-area {
+    flex: 1;
+    overflow: hidden;
+    position: relative;
+    background: var(--ai-bg-color);
+    display: flex;
+    flex-direction: column;
+}
+
+/* 聊天窗口样式 */
+.ai-chat-window {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    overflow: hidden;
+}
+
+.ai-chat-messages {
+    flex: 1;
+    overflow-y: auto;
+    padding: 15px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.ai-message {
+    display: flex;
+    flex-direction: column;
+    max-width: 85%;
+    margin-bottom: 10px;
+    animation: fadeIn 0.3s ease;
+}
+
+.ai-message-user {
+    align-self: flex-end;
+}
+
+.ai-message-assistant {
+    align-self: flex-start;
+}
+
+.ai-message-content {
+    padding: 10px;
+    border-radius: 10px;
+    word-break: break-word;
+    line-height: 1.5;
+}
+
+.ai-message-user .ai-message-content {
+    background-color: var(--ai-user-msg-bg);
+    color: white;
+    border-top-right-radius: 0;
+}
+
+.ai-message-assistant .ai-message-content {
+    background-color: var(--ai-assistant-msg-bg);
+    color: white;
+    border-top-left-radius: 0;
+}
+
+.ai-message-content code {
+    background: rgba(0, 0, 0, 0.2);
+    padding: 2px 4px;
+    border-radius: 3px;
+    font-family: monospace;
+}
+
+.ai-message-content pre {
+    background: rgba(0, 0, 0, 0.2);
+    padding: 10px;
+    border-radius: 5px;
+    overflow-x: auto;
+    font-family: monospace;
+}
+
+.ai-input-area {
+    display: flex;
+    padding: 10px;
+    background: var(--ai-bg-color);
+    border-top: 1px solid var(--ai-border-color);
+}
+
+.ai-input {
+    flex: 1;
+    border: 1px solid var(--ai-border-color);
+    border-radius: 5px;
+    padding: 10px;
+    background: var(--ai-input-bg);
+    color: var(--ai-text-color);
+    resize: none;
+    outline: none;
+    height: 40px;
+    min-height: 40px;
+    max-height: 120px;
+    font-family: inherit;
+}
+
+.ai-send-button {
+    margin-left: 10px;
+    background: var(--ai-primary-color);
+    color: white;
+    border: none;
+    border-radius: 5px;
+    padding: 0 15px;
+    cursor: pointer;
+    transition: background 0.3s;
+}
+
+.ai-send-button:hover {
+    background: var(--ai-secondary-color);
+}
+
+/* 设置窗口样式 */
+.ai-settings-window {
+    height: 100%;
+    overflow-y: auto;
+    padding: 15px;
+    background: var(--ai-bg-color);
+}
+
+.ai-settings-section {
+    margin-bottom: 20px;
+}
+
+.ai-settings-form-group {
+    margin-bottom: 15px;
+}
+
+.ai-settings-form-group label {
+    display: block;
+    margin-bottom: 5px;
+    color: var(--ai-text-color);
+    font-weight: bold;
+}
+
+.ai-settings-form-group input,
+.ai-settings-form-group select,
+.ai-settings-form-group textarea {
+    width: 100%;
+    padding: 8px;
+    border: 1px solid var(--ai-border-color);
+    border-radius: 4px;
+    background: var(--ai-input-bg);
+    color: var(--ai-text-color);
+    outline: none;
+}
+
+.ai-settings-form-group textarea {
+    min-height: 100px;
+    resize: vertical;
+}
+
+.ai-settings-buttons {
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+    margin-top: 15px;
+}
+
+.ai-settings-button {
+    padding: 8px 16px;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: opacity 0.3s;
+    border: none;
+}
+
+.ai-settings-button:hover {
+    opacity: 0.8;
+}
+
+.ai-settings-save {
+    background: var(--ai-primary-color);
+    color: white;
+}
+
+.ai-settings-cancel {
+    background: var(--ai-assistant-msg-bg);
+    color: white;
+}
+
+/* 加载动画 */
+.ai-loading {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 20px;
+}
+
+.ai-spinner {
+    width: 24px;
+    height: 24px;
+    border: 3px solid rgba(255, 255, 255, 0.3);
+    border-radius: 50%;
+    border-top-color: var(--ai-primary-color);
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    to { transform: rotate(360deg); }
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+/* 错误提示 */
+.ai-error {
+    color: #ff5555;
+    padding: 10px;
+    margin: 10px 0;
+    border: 1px solid #ff5555;
+    border-radius: 4px;
+    background: rgba(255, 85, 85, 0.1);
+}
+
+/* 通知提示 */
+.ai-notification {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    padding: 10px 20px;
+    border-radius: 4px;
+    background: var(--ai-bg-color);
+    color: var(--ai-text-color);
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+    z-index: 10000;
+    transition: opacity 0.3s;
+}
+
+.ai-notification.success {
+    background: #50fa7b;
+    color: #282a36;
+}
+
+.ai-notification.error {
+    background: #ff5555;
+    color: white;
+}
+
+/* 工作流窗口样式 */
+.ai-workflow-window {
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    color: var(--ai-text-color);
+    padding: 20px;
+    text-align: center;
+}
+
+.ai-workflow-message {
+    font-size: 18px;
+    margin-bottom: 20px;
+}
+
+/* 滚动条样式 */
+*::-webkit-scrollbar {
+    width: 8px;
+}
+
+*::-webkit-scrollbar-track {
+    background: rgba(0, 0, 0, 0.1);
+}
+
+*::-webkit-scrollbar-thumb {
+    background: var(--ai-primary-color);
+    border-radius: 4px;
+}
+
+/* 响应式样式 */
+@media (max-width: 768px) {
+    .ai-assistant-container {
+        width: 90% !important;
+        height: 80% !important;
+    }
+} 

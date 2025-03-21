@@ -1,0 +1,15 @@
+{
+    "name": "ComfyUI AI Assistant",
+    "description": "AI Assistant extension for ComfyUI",
+    "version": "1.0.0",
+    "author": "Your Name",
+    "entry": "web/ai_index.js",
+    "requires": ["comfyui"],
+    "type": "extension",
+    "module": "true",
+    "base_url": "/extensions/comfy_ai_assistant/",
+    "web": {
+        "styles": ["styles/main.css"],
+        "scripts": ["ai_index.js"]
+    }
+} 

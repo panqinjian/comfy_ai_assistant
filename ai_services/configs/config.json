@@ -1,0 +1,18 @@
+{
+    "service": "g4f",
+    "service_list": [
+        "G4F(免费)",
+        "通义千问"
+    ],
+    "service_ID_list": [
+        "g4f",
+        "qianwen"
+    ],
+    "ai_params": {
+        "model": "DEEPSEEK-R1",
+        "temperature": "1.1",
+        "max_tokens": "2001",
+        "timeout": "300",
+        "proxy": ""
+    }
+}

@@ -1,0 +1,7 @@
+{
+    "model": "DEEPSEEK-R1",
+    "temperature": "1.1",
+    "max_tokens": "2001",
+    "timeout": "300",
+    "proxy": ""
+}
