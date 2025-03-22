@@ -1,0 +1,497 @@
+[
+  {
+    "id": "__cached__",
+    "name": "--CACHED--",
+    "model_path": "g4f.models.__cached__"
+  },
+  {
+    "id": "__file__",
+    "name": "--FILE--",
+    "model_path": "g4f.models.__file__"
+  },
+  {
+    "id": "__name__",
+    "name": "--NAME--",
+    "model_path": "g4f.models.__name__"
+  },
+  {
+    "id": "__package__",
+    "name": "--PACKAGE--",
+    "model_path": "g4f.models.__package__"
+  },
+  {
+    "id": "airoboros_70b",
+    "name": "AIROBOROS-70B",
+    "model_path": "g4f.models.airoboros_70b"
+  },
+  {
+    "id": "blackboxai",
+    "name": "BLACKBOXAI",
+    "model_path": "g4f.models.blackboxai"
+  },
+  {
+    "id": "blackboxai_pro",
+    "name": "BLACKBOXAI-PRO",
+    "model_path": "g4f.models.blackboxai_pro"
+  },
+  {
+    "id": "claude_3_5_sonnet",
+    "name": "CLAUDE-3-5-SONNET",
+    "model_path": "g4f.models.claude_3_5_sonnet"
+  },
+  {
+    "id": "claude_3_7_sonnet",
+    "name": "CLAUDE-3-7-SONNET",
+    "model_path": "g4f.models.claude_3_7_sonnet"
+  },
+  {
+    "id": "claude_3_7_sonnet_thinking",
+    "name": "CLAUDE-3-7-SONNET-THINKING",
+    "model_path": "g4f.models.claude_3_7_sonnet_thinking"
+  },
+  {
+    "id": "claude_3_haiku",
+    "name": "CLAUDE-3-HAIKU",
+    "model_path": "g4f.models.claude_3_haiku"
+  },
+  {
+    "id": "claude_3_opus",
+    "name": "CLAUDE-3-OPUS",
+    "model_path": "g4f.models.claude_3_opus"
+  },
+  {
+    "id": "claude_3_sonnet",
+    "name": "CLAUDE-3-SONNET",
+    "model_path": "g4f.models.claude_3_sonnet"
+  },
+  {
+    "id": "command_r",
+    "name": "COMMAND-R",
+    "model_path": "g4f.models.command_r"
+  },
+  {
+    "id": "command_r7b",
+    "name": "COMMAND-R7B",
+    "model_path": "g4f.models.command_r7b"
+  },
+  {
+    "id": "command_r_plus",
+    "name": "COMMAND-R-PLUS",
+    "model_path": "g4f.models.command_r_plus"
+  },
+  {
+    "id": "dall_e_3",
+    "name": "DALL-E-3",
+    "model_path": "g4f.models.dall_e_3"
+  },
+  {
+    "id": "dbrx_instruct",
+    "name": "DBRX-INSTRUCT",
+    "model_path": "g4f.models.dbrx_instruct"
+  },
+  {
+    "id": "deepseek_chat",
+    "name": "DEEPSEEK-CHAT",
+    "model_path": "g4f.models.deepseek_chat"
+  },
+  {
+    "id": "deepseek_r1",
+    "name": "DEEPSEEK-R1",
+    "model_path": "g4f.models.deepseek_r1"
+  },
+  {
+    "id": "deepseek_v3",
+    "name": "DEEPSEEK-V3",
+    "model_path": "g4f.models.deepseek_v3"
+  },
+  {
+    "id": "default",
+    "name": "DEFAULT",
+    "model_path": "g4f.models.default"
+  },
+  {
+    "id": "default_vision",
+    "name": "DEFAULT-VISION",
+    "model_path": "g4f.models.default_vision"
+  },
+  {
+    "id": "dolphin_2_6",
+    "name": "DOLPHIN-2-6",
+    "model_path": "g4f.models.dolphin_2_6"
+  },
+  {
+    "id": "dolphin_2_9",
+    "name": "DOLPHIN-2-9",
+    "model_path": "g4f.models.dolphin_2_9"
+  },
+  {
+    "id": "evil",
+    "name": "EVIL",
+    "model_path": "g4f.models.evil"
+  },
+  {
+    "id": "flux",
+    "name": "FLUX",
+    "model_path": "g4f.models.flux"
+  },
+  {
+    "id": "flux_dev",
+    "name": "FLUX-DEV",
+    "model_path": "g4f.models.flux_dev"
+  },
+  {
+    "id": "flux_pro",
+    "name": "FLUX-PRO",
+    "model_path": "g4f.models.flux_pro"
+  },
+  {
+    "id": "flux_schnell",
+    "name": "FLUX-SCHNELL",
+    "model_path": "g4f.models.flux_schnell"
+  },
+  {
+    "id": "gemini",
+    "name": "GEMINI",
+    "model_path": "g4f.models.gemini"
+  },
+  {
+    "id": "gemini_1_5_flash",
+    "name": "GEMINI-1-5-FLASH",
+    "model_path": "g4f.models.gemini_1_5_flash"
+  },
+  {
+    "id": "gemini_1_5_pro",
+    "name": "GEMINI-1-5-PRO",
+    "model_path": "g4f.models.gemini_1_5_pro"
+  },
+  {
+    "id": "gemini_2_0_flash",
+    "name": "GEMINI-2-0-FLASH",
+    "model_path": "g4f.models.gemini_2_0_flash"
+  },
+  {
+    "id": "gemini_2_0_flash_thinking",
+    "name": "GEMINI-2-0-FLASH-THINKING",
+    "model_path": "g4f.models.gemini_2_0_flash_thinking"
+  },
+  {
+    "id": "gemini_2_0_pro",
+    "name": "GEMINI-2-0-PRO",
+    "model_path": "g4f.models.gemini_2_0_pro"
+  },
+  {
+    "id": "gemini_exp",
+    "name": "GEMINI-EXP",
+    "model_path": "g4f.models.gemini_exp"
+  },
+  {
+    "id": "gigachat",
+    "name": "GIGACHAT",
+    "model_path": "g4f.models.gigachat"
+  },
+  {
+    "id": "glm_4",
+    "name": "GLM-4",
+    "model_path": "g4f.models.glm_4"
+  },
+  {
+    "id": "gpt_4",
+    "name": "GPT-4",
+    "model_path": "g4f.models.gpt_4"
+  },
+  {
+    "id": "gpt_4o",
+    "name": "GPT-4O",
+    "model_path": "g4f.models.gpt_4o"
+  },
+  {
+    "id": "gpt_4o_mini",
+    "name": "GPT-4O-MINI",
+    "model_path": "g4f.models.gpt_4o_mini"
+  },
+  {
+    "id": "grok_3",
+    "name": "GROK-3",
+    "model_path": "g4f.models.grok_3"
+  },
+  {
+    "id": "grok_3_r1",
+    "name": "GROK-3-R1",
+    "model_path": "g4f.models.grok_3_r1"
+  },
+  {
+    "id": "hermes_2_dpo",
+    "name": "HERMES-2-DPO",
+    "model_path": "g4f.models.hermes_2_dpo"
+  },
+  {
+    "id": "janus_pro_7b",
+    "name": "JANUS-PRO-7B",
+    "model_path": "g4f.models.janus_pro_7b"
+  },
+  {
+    "id": "llama_2_7b",
+    "name": "LLAMA-2-7B",
+    "model_path": "g4f.models.llama_2_7b"
+  },
+  {
+    "id": "llama_3",
+    "name": "LLAMA-3",
+    "model_path": "g4f.models.llama_3"
+  },
+  {
+    "id": "llama_3_1_405b",
+    "name": "LLAMA-3-1-405B",
+    "model_path": "g4f.models.llama_3_1_405b"
+  },
+  {
+    "id": "llama_3_1_70b",
+    "name": "LLAMA-3-1-70B",
+    "model_path": "g4f.models.llama_3_1_70b"
+  },
+  {
+    "id": "llama_3_1_8b",
+    "name": "LLAMA-3-1-8B",
+    "model_path": "g4f.models.llama_3_1_8b"
+  },
+  {
+    "id": "llama_3_2_11b",
+    "name": "LLAMA-3-2-11B",
+    "model_path": "g4f.models.llama_3_2_11b"
+  },
+  {
+    "id": "llama_3_2_1b",
+    "name": "LLAMA-3-2-1B",
+    "model_path": "g4f.models.llama_3_2_1b"
+  },
+  {
+    "id": "llama_3_2_3b",
+    "name": "LLAMA-3-2-3B",
+    "model_path": "g4f.models.llama_3_2_3b"
+  },
+  {
+    "id": "llama_3_2_90b",
+    "name": "LLAMA-3-2-90B",
+    "model_path": "g4f.models.llama_3_2_90b"
+  },
+  {
+    "id": "llama_3_3_70b",
+    "name": "LLAMA-3-3-70B",
+    "model_path": "g4f.models.llama_3_3_70b"
+  },
+  {
+    "id": "llama_3_70b",
+    "name": "LLAMA-3-70B",
+    "model_path": "g4f.models.llama_3_70b"
+  },
+  {
+    "id": "llama_3_8b",
+    "name": "LLAMA-3-8B",
+    "model_path": "g4f.models.llama_3_8b"
+  },
+  {
+    "id": "lzlv_70b",
+    "name": "LZLV-70B",
+    "model_path": "g4f.models.lzlv_70b"
+  },
+  {
+    "id": "meta",
+    "name": "META",
+    "model_path": "g4f.models.meta"
+  },
+  {
+    "id": "midjourney",
+    "name": "MIDJOURNEY",
+    "model_path": "g4f.models.midjourney"
+  },
+  {
+    "id": "mini_max",
+    "name": "MINI-MAX",
+    "model_path": "g4f.models.mini_max"
+  },
+  {
+    "id": "minicpm_2_5",
+    "name": "MINICPM-2-5",
+    "model_path": "g4f.models.minicpm_2_5"
+  },
+  {
+    "id": "mistral_nemo",
+    "name": "MISTRAL-NEMO",
+    "model_path": "g4f.models.mistral_nemo"
+  },
+  {
+    "id": "mixtral_8x22b",
+    "name": "MIXTRAL-8X22B",
+    "model_path": "g4f.models.mixtral_8x22b"
+  },
+  {
+    "id": "mixtral_8x7b",
+    "name": "MIXTRAL-8X7B",
+    "model_path": "g4f.models.mixtral_8x7b"
+  },
+  {
+    "id": "mixtral_small_24b",
+    "name": "MIXTRAL-SMALL-24B",
+    "model_path": "g4f.models.mixtral_small_24b"
+  },
+  {
+    "id": "mixtral_small_28b",
+    "name": "MIXTRAL-SMALL-28B",
+    "model_path": "g4f.models.mixtral_small_28b"
+  },
+  {
+    "id": "nemotron_70b",
+    "name": "NEMOTRON-70B",
+    "model_path": "g4f.models.nemotron_70b"
+  },
+  {
+    "id": "o1",
+    "name": "O1",
+    "model_path": "g4f.models.o1"
+  },
+  {
+    "id": "o1_mini",
+    "name": "O1-MINI",
+    "model_path": "g4f.models.o1_mini"
+  },
+  {
+    "id": "o3_mini",
+    "name": "O3-MINI",
+    "model_path": "g4f.models.o3_mini"
+  },
+  {
+    "id": "olmo_2_13b",
+    "name": "OLMO-2-13B",
+    "model_path": "g4f.models.olmo_2_13b"
+  },
+  {
+    "id": "olmoe_0125",
+    "name": "OLMOE-0125",
+    "model_path": "g4f.models.olmoe_0125"
+  },
+  {
+    "id": "phi_3_5_mini",
+    "name": "PHI-3-5-MINI",
+    "model_path": "g4f.models.phi_3_5_mini"
+  },
+  {
+    "id": "phi_4",
+    "name": "PHI-4",
+    "model_path": "g4f.models.phi_4"
+  },
+  {
+    "id": "pi",
+    "name": "PI",
+    "model_path": "g4f.models.pi"
+  },
+  {
+    "id": "qvq_72b",
+    "name": "QVQ-72B",
+    "model_path": "g4f.models.qvq_72b"
+  },
+  {
+    "id": "qwen_1_5_7b",
+    "name": "QWEN-1-5-7B",
+    "model_path": "g4f.models.qwen_1_5_7b"
+  },
+  {
+    "id": "qwen_2_5_1m",
+    "name": "QWEN-2-5-1M",
+    "model_path": "g4f.models.qwen_2_5_1m"
+  },
+  {
+    "id": "qwen_2_5_72b",
+    "name": "QWEN-2-5-72B",
+    "model_path": "g4f.models.qwen_2_5_72b"
+  },
+  {
+    "id": "qwen_2_5_coder_32b",
+    "name": "QWEN-2-5-CODER-32B",
+    "model_path": "g4f.models.qwen_2_5_coder_32b"
+  },
+  {
+    "id": "qwen_2_72b",
+    "name": "QWEN-2-72B",
+    "model_path": "g4f.models.qwen_2_72b"
+  },
+  {
+    "id": "qwen_2_vl_7b",
+    "name": "QWEN-2-VL-7B",
+    "model_path": "g4f.models.qwen_2_vl_7b"
+  },
+  {
+    "id": "qwq_32b",
+    "name": "QWQ-32B",
+    "model_path": "g4f.models.qwq_32b"
+  },
+  {
+    "id": "r1_1776",
+    "name": "R1-1776",
+    "model_path": "g4f.models.r1_1776"
+  },
+  {
+    "id": "reka_core",
+    "name": "REKA-CORE",
+    "model_path": "g4f.models.reka_core"
+  },
+  {
+    "id": "sd_3_5",
+    "name": "SD-3-5",
+    "model_path": "g4f.models.sd_3_5"
+  },
+  {
+    "id": "sdxl_turbo",
+    "name": "SDXL-TURBO",
+    "model_path": "g4f.models.sdxl_turbo"
+  },
+  {
+    "id": "sonar",
+    "name": "SONAR",
+    "model_path": "g4f.models.sonar"
+  },
+  {
+    "id": "sonar_pro",
+    "name": "SONAR-PRO",
+    "model_path": "g4f.models.sonar_pro"
+  },
+  {
+    "id": "sonar_reasoning",
+    "name": "SONAR-REASONING",
+    "model_path": "g4f.models.sonar_reasoning"
+  },
+  {
+    "id": "sonar_reasoning_pro",
+    "name": "SONAR-REASONING-PRO",
+    "model_path": "g4f.models.sonar_reasoning_pro"
+  },
+  {
+    "id": "tulu_3_1_8b",
+    "name": "TULU-3-1-8B",
+    "model_path": "g4f.models.tulu_3_1_8b"
+  },
+  {
+    "id": "tulu_3_405b",
+    "name": "TULU-3-405B",
+    "model_path": "g4f.models.tulu_3_405b"
+  },
+  {
+    "id": "tulu_3_70b",
+    "name": "TULU-3-70B",
+    "model_path": "g4f.models.tulu_3_70b"
+  },
+  {
+    "id": "wizardlm_2_7b",
+    "name": "WIZARDLM-2-7B",
+    "model_path": "g4f.models.wizardlm_2_7b"
+  },
+  {
+    "id": "wizardlm_2_8x22b",
+    "name": "WIZARDLM-2-8X22B",
+    "model_path": "g4f.models.wizardlm_2_8x22b"
+  },
+  {
+    "id": "yi_34b",
+    "name": "YI-34B",
+    "model_path": "g4f.models.yi_34b"
+  }
+]

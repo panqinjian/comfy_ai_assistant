@@ -48,15 +48,34 @@ async def get_history(request):
     
 async def set_history(request):
     """保存历史记录"""
-    # 如果没有指定服务，使用配置中的默认服务
-    data = await request.json()
-    service = data.get("service", None)
-    if service is None:
-        config = config.load_config()
-        service = config.get("service", "g4f")
-
-    # 确保服务目录存在
-    return save_history_local(data.get("history"), service)
+    try:
+        # 获取请求数据
+        data = await request.json()
+        
+        # 如果没有指定服务，使用配置中的默认服务
+        service = data.get("service", "g4f")
+        
+        # 保存历史记录
+        success = save_history_local(data.get("history", []), service)
+        
+        if success:
+            return web.json_response({
+                "success": True,
+                "message": "历史记录保存成功"
+            })
+        else:
+            return web.json_response({
+                "success": False,
+                "error": "保存历史记录失败"
+            }, status=500)
+            
+    except Exception as e:
+        import traceback
+        traceback.print_exc()
+        return web.json_response({
+            "success": False,
+            "error": str(e)
+        }, status=500)
 
 async def clear_history(request):
     """清除聊天历史"""

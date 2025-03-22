@@ -155,13 +155,16 @@ class G4FService(BaseService):
         return backup_models
         
         
-    async def send_message(self, message, session_id="default"):
+    async def send_message(self, message, stream=False, images=None, host_url=None, history=None):
         """
         发送消息
         
         Args:
             message: 消息内容
-            session_id: 会话ID
+            stream: 是否使用流式输出
+            images: 图片列表
+            host_url: 主机URL
+            history: 历史记录
             
         Returns:
             AI 回复
@@ -169,7 +172,6 @@ class G4FService(BaseService):
         try:
             # 从配置文件加载参数
             config = load_config("g4f")
-            print(config)
             
             # 更新服务参数
             if config:
@@ -185,16 +187,60 @@ class G4FService(BaseService):
                 os.environ["https_proxy"] = self.proxy
             
             # 构建消息
-            messages = [
-                {"role": "user", "content": message}
-            ]
+            messages = []
+            
+            # 如果有历史记录，添加到消息中
+            if history and isinstance(history, list):
+                for msg in history:
+                    if isinstance(msg, dict) and 'role' in msg and 'content' in msg:
+                        role = msg['role']
+                        content = msg['content']
+                        
+                        # 处理可能的多模态内容
+                        if isinstance(content, list):
+                            # 提取文本内容
+                            text_parts = []
+                            for item in content:
+                                if isinstance(item, dict) and 'text' in item:
+                                    text_parts.append(item['text'])
+                            
+                            if text_parts:
+                                content = ' '.join(text_parts)
+                            else:
+                                continue
+                                
+                        # 添加到消息列表
+                        messages.append({"role": role, "content": content})
+
+            # 处理当前消息和图片
+            if images and len(images) > 0:
+                # 构建多模态消息
+                current_message = {
+                    "role": "user",
+                    "content": [
+                        {"type": "text", "text": message}
+                    ]
+                }
+                
+                # 添加图片
+                for image in images:
+                    image_url = await self._process_image(image, host_url)
+                    current_message["content"].append({
+                        "type": "image_url",
+                        "image_url": {"url": image_url}
+                    })
+            else:
+                # 纯文本消息
+                current_message = {"role": "user", "content": message}
+                
+            messages.append(current_message)
             
             # 映射模型名称
             g4f_model = self._map_model_name(self.model)
             
             # 发送请求
             response = await g4f.ChatCompletion.create_async(
-                model=g4f_model,  # 使用映射后的模型
+                model=g4f_model,
                 messages=messages,
                 temperature=self.temperature,
                 max_tokens=self.max_tokens,

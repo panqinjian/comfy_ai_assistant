@@ -11,6 +11,7 @@ class AiService {
         this.service_list = [];
         this.ai_params = {};
         this.config = null;
+        this.isProcessing = false; // 添加处理状态标志
     }
 
     /**
@@ -150,10 +151,21 @@ class AiService {
             // 获取当前服务ID
             const serviceId = this.service || '';
             
-            // 构建请求数据 - 只发送消息内容和服务ID，让后端处理参数
+            // 获取历史记录以实现连续对话
+            let history = [];
+            try {
+                // 尝试加载历史记录
+                history = await this.getHistory();
+                console.log('已加载历史记录用于上下文连续性', history.length);
+            } catch (historyError) {
+                console.warn('获取历史记录失败，将使用空历史记录', historyError);
+            }
+            
+            // 构建请求数据 - 发送消息内容、服务ID和历史记录
             const requestData = {
                 message: message,
-                service: serviceId
+                service: serviceId,
+                history: history
             };
             
             // 如果有图片，添加到请求数据中
@@ -320,6 +332,47 @@ class AiService {
             console.error('保存历史记录失败:', error);
             return false;
         }
+    }
+
+    /**
+     * 重置服务状态
+     * 用于清除可能导致AI卡住的状态
+     */
+    resetState() {
+        console.log("重置AI服务状态...");
+        
+        // 重置处理状态标志
+        this.isProcessing = false;
+        
+        // 重置临时缓存但保留基本配置
+        const serviceId = this.service;
+        
+        // 记录当前服务ID，重置后恢复
+        this.currentServiceId = null;
+        this.service = null;
+        
+        // 暂存并清除当前配置
+        const savedConfig = this.config;
+        this.config = null;
+        
+        // 清除临时数据，但保留基本服务列表
+        const savedServiceList = this.service_list;
+        const savedServiceIdList = this.service_ID_list;
+        
+        this.service_list = [];
+        this.service_ID_list = [];
+        this.ai_params = {};
+        
+        // 恢复服务列表
+        this.service_list = savedServiceList;
+        this.service_ID_list = savedServiceIdList;
+        
+        // 如果有配置，恢复服务ID
+        if (savedConfig) {
+            this.service = serviceId;
+        }
+        
+        console.log("AI服务状态已重置");
     }
 }
 

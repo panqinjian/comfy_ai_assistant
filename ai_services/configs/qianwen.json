@@ -1,0 +1,8 @@
+{
+    "model": "通义千问 Turbo",
+    "temperature": "1",
+    "max_tokens": "6000",
+    "timeout": "300",
+    "proxy": "",
+    "api_key": ""
+}

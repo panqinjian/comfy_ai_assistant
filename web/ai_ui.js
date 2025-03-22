@@ -161,6 +161,94 @@ class AiUi {
                 break;
         }
     }
+
+    // 添加重置AI功能方法
+    async resetAi() {
+        console.log("重置AI助手...");
+        
+        try {
+            // 显示重置中的提示
+            const notification = document.createElement('div');
+            notification.textContent = "正在重置AI助手...";
+            notification.style.cssText = `
+                position: fixed;
+                bottom: 20px;
+                left: 20px;
+                background-color: #333;
+                color: #fff;
+                padding: 10px 15px;
+                border-radius: 4px;
+                z-index: 10000;
+                box-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
+                border-left: 4px solid #3a94ff;
+            `;
+            document.body.appendChild(notification);
+            
+            // 重置服务状态
+            this.aiService.resetState();
+            
+            // 清空聊天窗口
+            if (this.aiChatWindow) {
+                this.aiChatWindow.clearMessages();
+            }
+            
+            // 重新加载配置
+            await this.aiService.getConfig(true);
+            
+            // 重新加载历史记录
+            if (this.aiChatWindow) {
+                await this.aiChatWindow.loadHistory();
+            }
+            
+            // 延迟移除通知
+            setTimeout(() => {
+                notification.textContent = "AI助手已重置完成";
+                notification.style.borderLeftColor = "#4CAF50";
+                
+                setTimeout(() => {
+                    notification.style.opacity = "0";
+                    notification.style.transition = "opacity 0.5s ease";
+                    
+                    setTimeout(() => {
+                        document.body.removeChild(notification);
+                    }, 500);
+                }, 2000);
+            }, 1000);
+            
+            console.log("AI助手重置完成");
+            return true;
+        } catch (error) {
+            console.error("重置AI助手失败:", error);
+            
+            // 显示错误通知
+            const errorNotification = document.createElement('div');
+            errorNotification.textContent = `重置失败: ${error.message}`;
+            errorNotification.style.cssText = `
+                position: fixed;
+                bottom: 20px;
+                left: 20px;
+                background-color: #333;
+                color: #fff;
+                padding: 10px 15px;
+                border-radius: 4px;
+                z-index: 10000;
+                box-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
+                border-left: 4px solid #F44336;
+            `;
+            document.body.appendChild(errorNotification);
+            
+            setTimeout(() => {
+                errorNotification.style.opacity = "0";
+                errorNotification.style.transition = "opacity 0.5s ease";
+                
+                setTimeout(() => {
+                    document.body.removeChild(errorNotification);
+                }, 500);
+            }, 3000);
+            
+            return false;
+        }
+    }
 }
 
 // 导出服务实例

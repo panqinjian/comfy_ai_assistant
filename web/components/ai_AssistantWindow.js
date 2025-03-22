@@ -66,6 +66,46 @@ class AiAssistantWindow {
             align-items: center;
         `;
 
+        // 创建重置按钮
+        const resetButton = document.createElement('button');
+        resetButton.style.cssText = `
+            background: none;
+            border: none;
+            color: #ffffff;
+            cursor: pointer;
+            padding: 0 8px;
+            line-height: 1;
+            transition: all 0.3s;
+            font-size: 16px;
+        `;
+        resetButton.innerHTML = '🔄';
+        resetButton.title = '重置AI助手';
+        resetButton.addEventListener('mouseover', () => {
+            resetButton.style.color = '#3a94ff';
+            resetButton.style.transform = 'rotate(180deg)';
+        });
+        resetButton.addEventListener('mouseout', () => {
+            resetButton.style.color = '#ffffff';
+            resetButton.style.transform = 'rotate(0deg)';
+        });
+        resetButton.addEventListener('click', async (e) => {
+            e.stopPropagation(); // 防止事件冒泡
+            // 显示确认对话框
+            const aiDialog = await import('../components/ai_Dialog.js').then(module => module.default);
+            aiDialog.show('确定要重置AI助手吗？这将清除当前状态。', 
+                async () => {
+                    // 确定重置
+                    if (this.aiUi) {
+                        await this.aiUi.resetAi();
+                    }
+                }, 
+                () => {
+                    // 取消重置
+                    console.log('取消重置');
+                }
+            );
+        });
+
         // 创建关闭按钮
         const closeButton = document.createElement('button');
         closeButton.style.cssText = `
@@ -87,6 +127,7 @@ class AiAssistantWindow {
         });
 
         // 组装标题栏
+        controls.appendChild(resetButton);
         controls.appendChild(closeButton);
         titleBar.appendChild(titleText);
         titleBar.appendChild(controls);

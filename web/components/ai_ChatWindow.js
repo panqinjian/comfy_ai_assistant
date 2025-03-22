@@ -15,6 +15,7 @@ class AiChatWindow {
         this.visible = false;
         this.selectedImages = [];  // 存储已选择的图片
         this.initialized = this.init();
+        this.send=false;
     }
 
     async init() {
@@ -114,6 +115,127 @@ class AiChatWindow {
                 input.style.height = 'auto';
                 input.style.height = Math.min(input.scrollHeight, 120) + 'px';
             }, 0);
+        });
+        
+        // 添加拖拽相关事件
+        input.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            input.style.borderColor = '#6a8eff';
+            input.style.backgroundColor = '#2a2a40';
+        });
+        
+        input.addEventListener('dragleave', (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            input.style.borderColor = '#3a3a4a';
+            input.style.backgroundColor = '#1e1e2e';
+        });
+        
+        input.addEventListener('drop', async (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            
+            // 恢复输入框样式
+            input.style.borderColor = '#3a3a4a';
+            input.style.backgroundColor = '#1e1e2e';
+            
+            // 处理拖拽的数据
+            if (e.dataTransfer.items) {
+                // 检查是否存在文件
+                const hasFiles = Array.from(e.dataTransfer.items).some(item => item.kind === 'file');
+                
+                // 处理拖拽的文件
+                if (hasFiles) {
+                    const imageFiles = [];
+                    const textFiles = [];
+                    
+                    for (let i = 0; i < e.dataTransfer.items.length; i++) {
+                        const item = e.dataTransfer.items[i];
+                        
+                        if (item.kind === 'file') {
+                            const file = item.getAsFile();
+                            // 判断是否为图片文件
+                            if (file.type.startsWith('image/')) {
+                                imageFiles.push(file);
+                            }
+                            // 判断是否为文本文件
+                            else if (file.type === 'text/plain' || file.type === 'application/json' || 
+                                     file.type === 'text/html' || file.type === 'text/css' || 
+                                     file.type === 'text/javascript' || file.type === 'application/xml' ||
+                                     file.type === '' || file.name.endsWith('.txt') || file.name.endsWith('.md') ||
+                                     file.name.endsWith('.py') || file.name.endsWith('.js') || file.name.endsWith('.html') ||
+                                     file.name.endsWith('.css') || file.name.endsWith('.json') || file.name.endsWith('.xml')) {
+                                textFiles.push(file);
+                            }
+                        }
+                    }
+                    
+                    // 处理图片文件
+                    if (imageFiles.length > 0) {
+                        await this.handleDroppedFiles(imageFiles);
+                    }
+                    
+                    // 处理文本文件，读取其内容到输入框
+                    if (textFiles.length > 0) {
+                        await this.handleTextFiles(textFiles, input);
+                    }
+                }
+                
+                // 检查拖拽的文本内容
+                for (let i = 0; i < e.dataTransfer.items.length; i++) {
+                    const item = e.dataTransfer.items[i];
+                    
+                    if (item.kind === 'string' && item.type === 'text/plain') {
+                        item.getAsString((text) => {
+                            // 检查是否为ComfyUI图片URL
+                            if (text.includes('/api/view?filename=') || text.includes('/view?filename=')) {
+                                // 复用ComfyUI图片
+                                this.handleComfyUIImage(text);
+                            } else {
+                                // 普通文本，添加到输入框
+                                const currentText = input.value;
+                                const cursorPos = input.selectionStart;
+                                input.value = currentText.substring(0, cursorPos) + text + currentText.substring(input.selectionEnd);
+                                
+                                // 调整输入框高度
+                                input.style.height = 'auto';
+                                input.style.height = Math.min(input.scrollHeight, 120) + 'px';
+                            }
+                        });
+                    }
+                }
+            } else {
+                // 如果是普通的文件数组（旧版浏览器）
+                const imageFiles = [];
+                const textFiles = [];
+                
+                for (let i = 0; i < e.dataTransfer.files.length; i++) {
+                    const file = e.dataTransfer.files[i];
+                    if (file.type.startsWith('image/')) {
+                        imageFiles.push(file);
+                    }
+                    // 判断是否为文本文件
+                    else if (file.type === 'text/plain' || file.type === 'application/json' || 
+                             file.type === 'text/html' || file.type === 'text/css' || 
+                             file.type === 'text/javascript' || file.type === 'application/xml' ||
+                             file.type === '' || file.name.endsWith('.txt') || file.name.endsWith('.md') ||
+                             file.name.endsWith('.py') || file.name.endsWith('.js') || file.name.endsWith('.html') ||
+                             file.name.endsWith('.css') || file.name.endsWith('.json') || file.name.endsWith('.xml')) {
+                        textFiles.push(file);
+                    }
+                }
+                
+                // 处理图片文件
+                if (imageFiles.length > 0) {
+                    await this.handleDroppedFiles(imageFiles);
+                }
+                
+                // 处理文本文件
+                if (textFiles.length > 0) {
+                    await this.handleTextFiles(textFiles, input);
+                }
+            }
         });
         
         // 创建图片上传按钮
@@ -332,21 +454,176 @@ class AiChatWindow {
             padding: 12px 15px;
             border-radius: 18px;
         `;
-        messageContent.innerHTML = this.formatMessage(content);
+        
+        // 检查内容是否已经是HTML格式
+        if (content && typeof content === 'object' && content.content_format === 'html') {
+            messageContent.innerHTML = content.content;
+        } else {
+            messageContent.innerHTML = this.formatMessage(content);
+        }
+        
+        // 处理代码块
+        messageContent.querySelectorAll('pre').forEach((preBlock, index) => {
+            // 设置相对定位，用于放置按钮
+            preBlock.style.position = 'relative';
+            
+            // 创建按钮容器
+            const buttonContainer = document.createElement('div');
+            buttonContainer.style.cssText = `
+                position: absolute;
+                top: 5px;
+                right: 5px;
+                display: flex;
+                gap: 5px;
+                opacity: 0;
+                transition: opacity 0.3s;
+            `;
+            
+            // 创建按钮的通用样式
+            const buttonStyle = `
+                padding: 4px 8px;
+                background: rgba(0, 0, 0, 0.6);
+                border: none;
+                border-radius: 4px;
+                color: #fff;
+                cursor: pointer;
+                font-size: 12px;
+                transition: background 0.3s;
+            `;
+            
+            // 复制按钮
+            const copyButton = document.createElement('button');
+            copyButton.innerHTML = '复制';
+            copyButton.style.cssText = buttonStyle;
+            
+            // 保存按钮
+            const saveButton = document.createElement('button');
+            saveButton.innerHTML = '保存';
+            saveButton.style.cssText = buttonStyle;
+            
+            // 复制功能
+            copyButton.onclick = async (e) => {
+                e.stopPropagation();
+                const code = preBlock.querySelector('code')?.innerText || preBlock.innerText;
+                try {
+                    // 使用更可靠的复制方法
+                    const compare = (text) => {
+                        const isRTL = document.documentElement.getAttribute('dir') === 'rtl';
+                        const element = document.createElement('textarea');
+                        // 防止在ios中产生缩放效果
+                        element.style.fontSize = '12pt';
+                        // 重置盒模型
+                        element.style.border = '0';
+                        element.style.padding = '0';
+                        element.style.margin = '0';
+                        // 将元素移到屏幕外
+                        element.style.position = 'absolute';
+                        element.style[isRTL ? 'right' : 'left'] = '-9999px';
+                        // 移动元素到页面底部
+                        let yPosition = window.pageYOffset || document.documentElement.scrollTop;
+                        element.style.top = `${yPosition}px`;
+                        // 设置元素只读
+                        element.setAttribute('readonly', '');
+                        element.value = text;
+                        document.body.appendChild(element);
+
+                        const ment = element;
+                        ment.select();
+                        ment.setSelectionRange(0, ment.value.length);
+                        const result = document.execCommand('copy');
+                        ment.remove();
+                        return result;
+                    };
+
+                    const success = compare(code);
+                    if (success) {
+                        copyButton.innerHTML = '已复制';
+                        copyButton.style.background = 'rgba(40, 167, 69, 0.8)';
+                    } else {
+                        throw new Error('复制失败');
+                    }
+                    
+                    setTimeout(() => {
+                        copyButton.innerHTML = '复制';
+                        copyButton.style.background = 'rgba(0, 0, 0, 0.6)';
+                    }, 1000);
+                } catch (err) {
+                    console.error('复制失败:', err);
+                    copyButton.innerHTML = '复制失败';
+                    copyButton.style.background = 'rgba(220, 53, 69, 0.8)';
+                    setTimeout(() => {
+                        copyButton.innerHTML = '复制';
+                        copyButton.style.background = 'rgba(0, 0, 0, 0.6)';
+                    }, 1000);
+                }
+            };
+            
+            // 保存功能
+            saveButton.onclick = (e) => {
+                e.stopPropagation();
+                const code = preBlock.querySelector('code')?.innerText || preBlock.innerText;
+                const blob = new Blob([code], { type: 'text/plain' });
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = `code_block_${index + 1}.txt`;
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+                URL.revokeObjectURL(url);
+                
+                saveButton.innerHTML = '已保存';
+                saveButton.style.background = 'rgba(40, 167, 69, 0.8)';
+                setTimeout(() => {
+                    saveButton.innerHTML = '保存';
+                    saveButton.style.background = 'rgba(0, 0, 0, 0.6)';
+                }, 1000);
+            };
+            
+            // 添加按钮到容器
+            buttonContainer.appendChild(copyButton);
+            buttonContainer.appendChild(saveButton);
+            
+            // 添加按钮容器到代码块
+            preBlock.appendChild(buttonContainer);
+            
+            // 添加代码块的悬停效果
+            preBlock.addEventListener('mouseover', () => {
+                buttonContainer.style.opacity = '1';
+            });
+            preBlock.addEventListener('mouseout', () => {
+                buttonContainer.style.opacity = '0';
+            });
+        });
         
         // 添加图片到消息内容
         if (images && images.length > 0) {
+            const imageContainer = document.createElement('div');
+            imageContainer.style.cssText = `
+                display: flex;
+                flex-wrap: wrap;
+                gap: 10px;
+                margin-top: 10px;
+            `;
+            
             images.forEach(imageUrl => {
                 const img = document.createElement('img');
                 img.src = imageUrl;
                 img.alt = '附件图片';
-                img.style.cursor = 'pointer';
-                img.addEventListener('click', () => {
-                    // 点击图片放大查看
-                    this.showImageViewer(imageUrl);
-                });
-                messageContent.appendChild(img);
+                img.style.cssText = `
+                    max-width: 200px;
+                    max-height: 200px;
+                    cursor: pointer;
+                    border-radius: 4px;
+                `;
+                
+                // 点击放大查看
+                img.onclick = () => this.showImageViewer(imageUrl);
+                
+                imageContainer.appendChild(img);
             });
+            
+            messageContent.appendChild(imageContainer);
         }
         
         message.appendChild(messageContent);
@@ -354,6 +631,10 @@ class AiChatWindow {
         
         // 滚动到底部
         this.messagesArea.scrollTop = this.messagesArea.scrollHeight;
+        if(this.send){
+            this.send=false;
+            this.saveHistory();
+        }
     }
     
     showImageViewer(imageUrl) {
@@ -443,8 +724,13 @@ class AiChatWindow {
             
             // 添加历史消息
             history.forEach(msg => {
+                // 支持两种格式：新格式带有 content_format 字段，旧格式直接使用 content
+                const content = msg.content_format === 'html' 
+                    ? { content: msg.content, content_format: 'html' } 
+                    : msg.content;
+                    
                 const images = msg.images || [];
-                this.addMessage(msg.role, msg.content, images);
+                this.addMessage(msg.role, content, images);
             });
         } catch (error) {
             console.error('加载历史记录失败:', error);
@@ -504,6 +790,40 @@ class AiChatWindow {
         const message = this.input.value.trim();
         
         if (!message && this.selectedImages.length === 0) return;
+        
+        // 检查AI服务是否正在处理中
+        if (this.aiService.isProcessing) {
+            // 显示通知
+            const notification = document.createElement('div');
+            notification.textContent = "AI助手正忙，请稍后再试或点击重置按钮";
+            notification.style.cssText = `
+                position: fixed;
+                bottom: 20px;
+                left: 20px;
+                background-color: #333;
+                color: #fff;
+                padding: 10px 15px;
+                border-radius: 4px;
+                z-index: 10000;
+                box-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
+                border-left: 4px solid #ff9800;
+            `;
+            document.body.appendChild(notification);
+            
+            setTimeout(() => {
+                notification.style.opacity = "0";
+                notification.style.transition = "opacity 0.5s ease";
+                
+                setTimeout(() => {
+                    document.body.removeChild(notification);
+                }, 500);
+            }, 3000);
+            
+            return;
+        }
+        
+        // 设置处理状态为true
+        this.aiService.isProcessing = true;
         
         // 清空输入框
         this.input.value = '';
@@ -569,11 +889,34 @@ class AiChatWindow {
         // 滚动到底部
         this.messagesArea.scrollTop = this.messagesArea.scrollHeight;
         
+        // 设置超时检测
+        const timeout = setTimeout(() => {
+            // 如果30秒后仍在处理中，可能已经卡住
+            if (this.aiService.isProcessing) {
+                // 添加一个重置提示
+                const timeoutMessage = document.createElement('div');
+                timeoutMessage.className = 'ai-error';
+                timeoutMessage.style.cssText = `
+                    align-self: center;
+                    margin: 10px 0;
+                    padding: 8px 12px;
+                    background-color: rgba(255, 152, 0, 0.2);
+                    border-left: 3px solid #ff9800;
+                    border-radius: 3px;
+                    color: #ff9800;
+                    font-size: 0.9em;
+                `;
+                timeoutMessage.textContent = `AI响应时间较长，可能已卡住。如需重置，请点击窗口右上角的重置按钮 🔄`;
+                this.messagesArea.appendChild(timeoutMessage);
+                this.messagesArea.scrollTop = this.messagesArea.scrollHeight;
+            }
+        }, 60000); // 30秒超时检测
+        
         // 发送消息
         try {
             // 发送消息与图片
             const data = await this.aiService.sendMessage(message, imagesToSend);
-            
+            this.send=true;
             // 移除加载中消息
             this.messagesArea.removeChild(loadingMessage);
             
@@ -603,11 +946,16 @@ class AiChatWindow {
             errorMessage.textContent = `发送消息失败: ${error.message}`;
             this.messagesArea.appendChild(errorMessage);
         } finally {
+            // 清除超时检测
+            clearTimeout(timeout);
+            
             // 恢复按钮状态
             this.sendButton.disabled = false;
             this.sendButton.style.opacity = '1';
             this.sendButton.textContent = '发送';
-            this.saveHistory();
+            
+            // 重置处理状态为false
+            this.aiService.isProcessing = false;
         }
     }
     
@@ -732,24 +1080,55 @@ class AiChatWindow {
     formatMessage(content) {
         if (!content) return '';
         
-        // 转义HTML
-        let formatted = content
+        // 如果内容是对象（已经是HTML格式），直接返回其content属性
+        if (typeof content === 'object' && content.content_format === 'html') {
+            return content.content;
+        }
+        
+        const rawString = String(content);
+        let formatted = '';
+        let buffer = '';
+        let inCodeBlock = false;
+        let currentLang = '';
+        
+        // 首先提取所有代码块
+        const codeBlocks = [];
+        const codeBlockRegex = /```(\w*)\n([\s\S]*?)```/g;
+        let lastIndex = 0;
+        let match;
+        
+        while ((match = codeBlockRegex.exec(rawString)) !== null) {
+            // 添加代码块之前的文本
+            if (match.index > lastIndex) {
+                const text = rawString.slice(lastIndex, match.index);
+                formatted += this.escapeHtml(text).replace(/\n/g, '<br>');
+            }
+            
+            // 获取语言和代码内容
+            const [, lang, code] = match;
+            
+            // 创建代码块容器，保持原始格式
+            formatted += `<div class="code-wrapper">
+                <pre><code class="language-${lang}">${this.escapeHtml(code)}</code></pre>
+            </div>`;
+            
+            lastIndex = match.index + match[0].length;
+        }
+        
+        // 添加剩余的文本
+        if (lastIndex < rawString.length) {
+            const remainingText = rawString.slice(lastIndex);
+            formatted += this.escapeHtml(remainingText).replace(/\n/g, '<br>');
+        }
+        
+        return formatted;
+    }
+    
+    escapeHtml(text) {
+        return text
             .replace(/&/g, '&amp;')
             .replace(/</g, '&lt;')
             .replace(/>/g, '&gt;');
-        
-        // 格式化代码块
-        formatted = formatted.replace(/```([\s\S]*?)```/g, (match, code) => {
-            return `<pre><code>${code}</code></pre>`;
-        });
-        
-        // 格式化内联代码
-        formatted = formatted.replace(/`([^`]+)`/g, '<code>$1</code>');
-        
-        // 转换换行符
-        formatted = formatted.replace(/\n/g, '<br>');
-        
-        return formatted;
     }
     
     async saveHistory() {
@@ -783,8 +1162,12 @@ class AiChatWindow {
                 const contentEl = messageEl.querySelector('.ai-message-content');
                 if (!contentEl) return;
                 
-                // 获取纯文本内容（去除HTML标签）
-                let content = contentEl.innerText || '';
+                // 获取HTML内容，保留格式化信息（包括代码块等）
+                // 使用 innerHTML 代替 innerText 来保存格式
+                let content = contentEl.innerHTML || '';
+                
+                // 移除可能有的图片标签，因为图片会单独保存
+                content = content.replace(/<img.*?>/g, '');
                 
                 // 收集图片
                 const images = [];
@@ -800,6 +1183,7 @@ class AiChatWindow {
                     messages.push({
                         role,
                         content,
+                        content_format: 'html',  // 添加标记表明内容是HTML格式
                         images
                     });
                 }
@@ -820,6 +1204,173 @@ class AiChatWindow {
             console.error('保存历史记录失败:', error);
             // 这里只记录错误，不显示给用户，避免干扰用户体验
         }
+    }
+
+    // 处理拖放的文件
+    async handleDroppedFiles(files) {
+        const uploadedFiles = [];
+        
+        for (const file of files) {
+            try {
+                // 创建 FormData 对象
+                const formData = new FormData();
+                formData.append('image', file);
+                
+                // 发送上传请求到 ComfyUI
+                const response = await fetch('/upload/image', {
+                    method: 'POST',
+                    body: formData
+                });
+                
+                if (!response.ok) {
+                    throw new Error(`上传失败: ${response.statusText}`);
+                }
+                
+                const result = await response.json();
+                if (result.name) {
+                    uploadedFiles.push({
+                        name: file.name,
+                        path: `/api/view?filename=${result.name}&type=input&subfolder=&rand=${Math.random()}`,
+                    });
+                }
+            } catch (error) {
+                console.error('上传图片失败:', error);
+                // 显示上传错误通知
+                this.showUploadErrorNotification(file.name, error.message);
+            }
+        }
+        
+        if (uploadedFiles.length > 0) {
+            this.handleSelectedImages(uploadedFiles);
+        }
+    }
+    
+    // 处理ComfyUI图片URL
+    handleComfyUIImage(url) {
+        // 清理URL，确保格式正确
+        let imagePath = url.trim();
+        
+        // 检查是否已经包含完整URL
+        if (!imagePath.startsWith('/api/view') && !imagePath.startsWith('http')) {
+            // 尝试提取文件名
+            const match = imagePath.match(/filename=([^&]+)/);
+            if (match && match[1]) {
+                imagePath = `/api/view?filename=${match[1]}&type=input&subfolder=&rand=${Math.random()}`;
+            }
+        }
+        
+        // 添加到选定图片和预览
+        this.handleSelectedImages([{
+            name: 'ComfyUI图片',
+            path: imagePath
+        }]);
+    }
+    
+    // 显示上传错误通知
+    showUploadErrorNotification(fileName, errorMessage) {
+        const notification = document.createElement('div');
+        notification.textContent = `上传图片 "${fileName}" 失败: ${errorMessage}`;
+        notification.style.cssText = `
+            position: fixed;
+            bottom: 20px;
+            left: 20px;
+            background-color: #333;
+            color: #fff;
+            padding: 10px 15px;
+            border-radius: 4px;
+            z-index: 10000;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
+            border-left: 4px solid #ff5555;
+        `;
+        document.body.appendChild(notification);
+        
+        setTimeout(() => {
+            notification.style.opacity = "0";
+            notification.style.transition = "opacity 0.5s ease";
+            
+            setTimeout(() => {
+                document.body.removeChild(notification);
+            }, 500);
+        }, 3000);
+    }
+    
+    // 处理文本文件，读取内容到输入框
+    async handleTextFiles(files, inputElement) {
+        if (!files || files.length === 0) return;
+        
+        try {
+            // 如果有多个文件，只处理第一个
+            const file = files[0];
+            
+            // 使用FileReader读取文本内容
+            const reader = new FileReader();
+            
+            reader.onload = (event) => {
+                const fileContent = event.target.result;
+                
+                // 将文本内容添加到输入框
+                const currentText = inputElement.value;
+                const cursorPos = inputElement.selectionStart;
+                inputElement.value = currentText.substring(0, cursorPos) + fileContent + currentText.substring(inputElement.selectionEnd);
+                
+                // 调整输入框高度
+                inputElement.style.height = 'auto';
+                inputElement.style.height = Math.min(inputElement.scrollHeight, 120) + 'px';
+                
+                // 显示成功通知
+                this.showNotification(`已成功导入文件 "${file.name}"`, 'success');
+            };
+            
+            reader.onerror = () => {
+                this.showNotification(`读取文件 "${file.name}" 失败`, 'error');
+            };
+            
+            // 开始读取文件
+            reader.readAsText(file);
+        } catch (error) {
+            console.error('读取文本文件失败:', error);
+            this.showNotification(`读取文件失败: ${error.message}`, 'error');
+        }
+    }
+    
+    // 通用通知方法
+    showNotification(message, type = 'info') {
+        const notification = document.createElement('div');
+        notification.textContent = message;
+        
+        let borderColor = '#3498db'; // 默认信息蓝色
+        
+        if (type === 'success') {
+            borderColor = '#2ecc71'; // 成功绿色
+        } else if (type === 'error') {
+            borderColor = '#e74c3c'; // 错误红色
+        } else if (type === 'warning') {
+            borderColor = '#f39c12'; // 警告黄色
+        }
+        
+        notification.style.cssText = `
+            position: fixed;
+            bottom: 20px;
+            left: 20px;
+            background-color: #333;
+            color: #fff;
+            padding: 10px 15px;
+            border-radius: 4px;
+            z-index: 10000;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
+            border-left: 4px solid ${borderColor};
+        `;
+        
+        document.body.appendChild(notification);
+        
+        setTimeout(() => {
+            notification.style.opacity = "0";
+            notification.style.transition = "opacity 0.5s ease";
+            
+            setTimeout(() => {
+                document.body.removeChild(notification);
+            }, 500);
+        }, 3000);
     }
 }
 

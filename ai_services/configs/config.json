@@ -9,9 +9,9 @@
         "qianwen"
     ],
     "ai_params": {
-        "model": "DEEPSEEK-R1",
-        "temperature": "1.1",
-        "max_tokens": "2001",
+        "model": "GPT-4",
+        "temperature": "1",
+        "max_tokens": "2000",
         "timeout": "300",
         "proxy": ""
     }
