@@ -177,60 +177,60 @@
 .ai-chat-messages {
     flex: 1;
     overflow-y: auto;
-    padding: 0; /* 修改1：去除padding */
+    padding: 15px;
     display: flex;
     flex-direction: column;
-    gap: 0; /* 修改2：去除gap间距 */
+    gap: 10px;
 }
 
 .ai-message {
     display: flex;
     flex-direction: column;
     max-width: 85%;
-    margin-bottom: 0; /* 修改3：去除底部margin */
+    margin-bottom: 10px;
     animation: fadeIn 0.3s ease;
 }
 
-/* 消息内容统一设置 */
+.ai-message-user {
+    align-self: flex-end;
+}
+
+.ai-message-assistant {
+    align-self: flex-start;
+}
+
 .ai-message-content {
-    margin: 2px 0; /* 修改4：用更小的上下margin控制间距 */
-    padding: 8px 12px;
-    border-radius: 12px;
-    position: relative;
+    padding: 10px;
+    border-radius: 10px;
+    word-break: break-word;
+    line-height: 1.5;
 }
 
 .ai-message-user .ai-message-content {
     background-color: var(--ai-user-msg-bg);
     color: white;
     border-top-right-radius: 0;
-    margin-left: auto; /* 使右侧消息贴右 */
 }
 
 .ai-message-assistant .ai-message-content {
     background-color: var(--ai-assistant-msg-bg);
     color: white;
     border-top-left-radius: 0;
-    margin-right: auto; /* 使左侧消息贴左 */
 }
 
-/* 代码块特殊处理 */
+.ai-message-content code {
+    background: rgba(0, 0, 0, 0.2);
+    padding: 2px 4px;
+    border-radius: 3px;
+    font-family: monospace;
+}
+
 .ai-message-content pre {
     background: rgba(0, 0, 0, 0.2);
-    padding: 8px !important; /* 代码块需要适当内边距 */
-    margin: 0;
-    border-radius: 4px;
+    padding: 10px;
+    border-radius: 5px;
     overflow-x: auto;
     font-family: monospace;
-    line-height: 1.4;
-    white-space: pre-wrap;
-    tab-size: 4;
-    font-size: 0.9em;
-}
-
-/* 移除pre标签的默认样式 */
-pre {
-    margin: 0;
-    white-space: pre-wrap;
 }
 
 .ai-input-area {

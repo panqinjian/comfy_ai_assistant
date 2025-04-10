@@ -49,7 +49,7 @@ async def get_config(request):
         SERVICES_CONFIG_DIR.mkdir(exist_ok=True, parents=True)
         # 从请求中获取 service 参数
         service = request.query.get('service', None)
-        print(f"请求服务配置: {service}")
+        #print(f"请求服务配置: {service}")
         
         # 使用 get_merged_config 获取配置
         config = load_config()
@@ -75,7 +75,7 @@ async def get_config(request):
                 print(f"Service {service} not found in registered services")
         
         config["ai_params"] = config_ai_params
-        print(f"返回配置: {config}")  # 添加调试输出
+        #print(f"返回配置: {config}")  # 添加调试输出
         
         return web.json_response({
             'success': True,
@@ -166,7 +166,7 @@ def save_config(config):
         with open(config_service_file, 'w', encoding='utf-8') as f:
             json.dump(config_l["ai_params"] , f, ensure_ascii=False, indent=4)
         
-        print(f"保存配置成功: {config}")
+        #print(f"保存配置成功: {config}")
         return True
     
     except Exception as e:

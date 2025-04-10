@@ -8,6 +8,8 @@ import AiWorkflowWindow from './components/ai_WorkflowWindow.js';
 import AiChatWindow from './components/ai_ChatWindow.js';
 import AiDialog from './components/ai_Dialog.js';
 import aiService from './services/ai_Service.js';
+import MessageParser from './utils/messageParser.js';
+import AiPromptSelector from './components/ai_PromptSelector.js';
 
 class AiUi {
     constructor() {
@@ -18,6 +20,7 @@ class AiUi {
         this.aiWorkflowWindow = null;
         this.aiChatWindow = null;
         this.aiService = aiService;
+        this.loadHistory = true;
         this.old_window_id = null;
     }
 
@@ -41,6 +44,8 @@ class AiUi {
         const chatContainer = this.aiAssistantWindow.getWindowContainer('chat');
         this.aiChatWindow = new AiChatWindow(chatContainer);
         await this.aiChatWindow.initialized; // 等待初始化完成
+        this.aiChatWindow.messageParser = MessageParser; // 使用导入的单例实例
+        
 
         // 默认显示聊天窗口
         this.show_hide('chat');
@@ -155,10 +160,102 @@ class AiUi {
                 break;
             case 'chat':
                 if (this.aiChatWindow) {
-                    this.aiChatWindow.loadHistory();
+                    if(this.loadHistory) {
+                        this.aiChatWindow.loadHistory();
+                        this.loadHistory = false;
+                    }
                     this.aiChatWindow.show_hide(true);
+                    this.aiChatWindow.scrollToBottom();
                 }
                 break;
+        }
+    }
+
+    // 添加重置AI功能方法
+    async resetAi() {
+        console.log("重置AI助手...");
+        
+        try {
+            // 显示重置中的提示
+            const notification = document.createElement('div');
+            notification.textContent = "正在重置AI助手...";
+            notification.style.cssText = `
+                position: fixed;
+                bottom: 20px;
+                left: 20px;
+                background-color: #333;
+                color: #fff;
+                padding: 10px 15px;
+                border-radius: 4px;
+                z-index: 10000;
+                box-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
+                border-left: 4px solid #3a94ff;
+            `;
+            document.body.appendChild(notification);
+            
+            // 重置服务状态
+            this.aiService.resetState();
+            
+            // 清空聊天窗口
+            if (this.aiChatWindow) {
+                this.aiChatWindow.clearMessages();
+            }
+            
+            // 重新加载配置
+            await this.aiService.getConfig(true);
+            
+            // 重新加载历史记录
+            if (this.aiChatWindow) {
+                await this.aiChatWindow.loadHistory();
+            }
+            
+            // 延迟移除通知
+            setTimeout(() => {
+                notification.textContent = "AI助手已重置完成";
+                notification.style.borderLeftColor = "#4CAF50";
+                
+                setTimeout(() => {
+                    notification.style.opacity = "0";
+                    notification.style.transition = "opacity 0.5s ease";
+                    
+                    setTimeout(() => {
+                        document.body.removeChild(notification);
+                    }, 500);
+                }, 2000);
+            }, 1000);
+            
+            console.log("AI助手重置完成");
+            return true;
+        } catch (error) {
+            console.error("重置AI助手失败:", error);
+            
+            // 显示错误通知
+            const errorNotification = document.createElement('div');
+            errorNotification.textContent = `重置失败: ${error.message}`;
+            errorNotification.style.cssText = `
+                position: fixed;
+                bottom: 20px;
+                left: 20px;
+                background-color: #333;
+                color: #fff;
+                padding: 10px 15px;
+                border-radius: 4px;
+                z-index: 10000;
+                box-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
+                border-left: 4px solid #F44336;
+            `;
+            document.body.appendChild(errorNotification);
+            
+            setTimeout(() => {
+                errorNotification.style.opacity = "0";
+                errorNotification.style.transition = "opacity 0.5s ease";
+                
+                setTimeout(() => {
+                    document.body.removeChild(errorNotification);
+                }, 500);
+            }, 3000);
+            
+            return false;
         }
     }
 }

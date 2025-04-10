@@ -110,13 +110,13 @@ class G4FService(BaseService):
                         "model_path": f"g4f.models.{model_id}"
                     })
                 
-                print(f"成功从网络获取到 {len(models)} 个G4F模型")
+                #print(f"成功从网络获取到 {len(models)} 个G4F模型")
                 
                 # 更新缓存
                 try:
                     with open(cache_file, 'w', encoding='utf-8') as f:
                         json.dump(models, f, ensure_ascii=False, indent=2)
-                    print("已更新模型缓存")
+                    #print("已更新模型缓存")
                 except Exception as e:
                     print(f"更新模型缓存失败: {str(e)}")
                 
@@ -129,13 +129,13 @@ class G4FService(BaseService):
             try:
                 with open(cache_file, 'r', encoding='utf-8') as f:
                     cached_models = json.load(f)
-                    print(f"使用缓存中的 {len(cached_models)} 个G4F模型")
+                    #print(f"使用缓存中的 {len(cached_models)} 个G4F模型")
                     return cached_models
             except Exception as e:
                 print(f"读取缓存失败: {str(e)}")
         
         # 3. 如果缓存也失败了，使用静态备份列表
-        print("使用静态备份模型列表")
+        #print("使用静态备份模型列表")
         backup_models = [
             {"id": "gpt_35_turbo", "name": "GPT-3.5-Turbo", "model_path": "g4f.models.gpt_35_turbo"},
             {"id": "gpt_4", "name": "GPT-4", "model_path": "g4f.models.gpt_4"},
@@ -148,28 +148,18 @@ class G4FService(BaseService):
         try:
             with open(cache_file, 'w', encoding='utf-8') as f:
                 json.dump(backup_models, f, ensure_ascii=False, indent=2)
-            print("已将备份模型列表写入缓存")
+            #print("已将备份模型列表写入缓存")
         except Exception as e:
             print(f"写入备份模型列表到缓存失败: {str(e)}")
         
         return backup_models
         
         
-    async def send_message(self, message, session_id="default"):
-        """
-        发送消息
-        
-        Args:
-            message: 消息内容
-            session_id: 会话ID
-            
-        Returns:
-            AI 回复
-        """
-        try:
+    async def send_message(self, message, stream=False, images=None, host_url=None, history=None, prompt=None):
+        """发送消息到 G4F"""
+        try:           
             # 从配置文件加载参数
             config = load_config("g4f")
-            print(config)
             
             # 更新服务参数
             if config:
@@ -185,22 +175,82 @@ class G4FService(BaseService):
                 os.environ["https_proxy"] = self.proxy
             
             # 构建消息
-            messages = [
-                {"role": "user", "content": message}
-            ]
+            messages = []
+            if prompt:
+                messages.append({"role": "system", "content": prompt})
+            
+            # 处理历史记录
+            # history 格式: {'records': [{message_id, type, user: {content, images}, assistant: {content, images}}], 'has_more', 'next_id'}
+            if isinstance(history, dict) and 'records' in history:
+                # 按 message_id 排序，确保消息顺序正确
+                sorted_records = sorted(history['records'], key=lambda x: x['message_id'])
+                
+                for record in sorted_records:
+                    if record['type'] == 'message':
+                        # 添加用户消息
+                        if 'user' in record and 'content' in record['user']:
+                            messages.append({
+                                "role": "user",
+                                "content": record['user']['content']
+                            })
+                        
+                        # 添加助手回复
+                        if 'assistant' in record and 'content' in record['assistant']:
+                            messages.append({
+                                "role": "assistant",
+                                "content": record['assistant']['content']
+                            })
+
+            # 处理当前消息和图片
+            if images and len(images) > 0:
+                # 构建多模态消息
+                current_message = {
+                    "role": "user",
+                    "content": [
+                        {"type": "text", "text": message}
+                    ]
+                }
+                
+                # 添加图片
+                for image in images:
+                    image_url = await self._process_image(image, host_url)
+                    current_message["content"].append({
+                        "type": "image_url",
+                        "image_url": {"url": image_url}
+                    })
+            else:
+                # 纯文本消息
+                current_message = {"role": "user", "content": message}
+                
+            messages.append(current_message)
             
             # 映射模型名称
             g4f_model = self._map_model_name(self.model)
+
+            # 准备请求数据
+            
+            parameters={
+                    "temperature": self.temperature,
+                    "max_tokens": self.max_tokens,
+                    "enable_search": True,
+                    "search_options": {
+                         "num_results": 5,
+                         "domain_whitelist": ["*.gov", "*.edu"],
+                         "time_range": "2020-01-01.."
+                         }
+                }
+            
             
             # 发送请求
             response = await g4f.ChatCompletion.create_async(
-                model=g4f_model,  # 使用映射后的模型
+                model=g4f_model,
                 messages=messages,
                 temperature=self.temperature,
                 max_tokens=self.max_tokens,
-                timeout=self.timeout
+                timeout=self.timeout,
+                parameters=parameters
             )
-            
+
             return response
         except Exception as e:
             import traceback

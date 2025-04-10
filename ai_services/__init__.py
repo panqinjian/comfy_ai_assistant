@@ -32,6 +32,9 @@ from . import chat_api
 from . import service_api
 from . import config_api
 from . import history_api
+from . import prompt_api
+from . import ffmpeg_api
+
 
 def setup_routes(app: web.Application) -> None:
     """设置所有API路由"""
@@ -45,6 +48,9 @@ def setup_routes(app: web.Application) -> None:
         service_api.register_service_api(app)
         config_api.register_config_api(app)
         history_api.register_history_api(app)
+        prompt_api.register_prompt_api(app)
+        ffmpeg_api.register_ffmpeg_api(app)
+        
         
         print("ComfyUI AI Assistant: API路由注册成功")
     except Exception as e:

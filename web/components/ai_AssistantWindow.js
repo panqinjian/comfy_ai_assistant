@@ -66,6 +66,46 @@ class AiAssistantWindow {
             align-items: center;
         `;
 
+        // 创建重置按钮
+        const resetButton = document.createElement('button');
+        resetButton.style.cssText = `
+            background: none;
+            border: none;
+            color: #ffffff;
+            cursor: pointer;
+            padding: 0 8px;
+            line-height: 1;
+            transition: all 0.3s;
+            font-size: 16px;
+        `;
+        resetButton.innerHTML = '🔄';
+        resetButton.title = '重置AI助手';
+        resetButton.addEventListener('mouseover', () => {
+            resetButton.style.color = '#3a94ff';
+            resetButton.style.transform = 'rotate(180deg)';
+        });
+        resetButton.addEventListener('mouseout', () => {
+            resetButton.style.color = '#ffffff';
+            resetButton.style.transform = 'rotate(0deg)';
+        });
+        resetButton.addEventListener('click', async (e) => {
+            e.stopPropagation(); // 防止事件冒泡
+            // 显示确认对话框
+            const aiDialog = await import('../components/ai_Dialog.js').then(module => module.default);
+            aiDialog.show('确定要重置AI助手吗？这将清除当前状态。', 
+                async () => {
+                    // 确定重置
+                    if (this.aiUi) {
+                        await this.aiUi.resetAi();
+                    }
+                }, 
+                () => {
+                    // 取消重置
+                    console.log('取消重置');
+                }
+            );
+        });
+
         // 创建关闭按钮
         const closeButton = document.createElement('button');
         closeButton.style.cssText = `
@@ -87,6 +127,7 @@ class AiAssistantWindow {
         });
 
         // 组装标题栏
+        controls.appendChild(resetButton);
         controls.appendChild(closeButton);
         titleBar.appendChild(titleText);
         titleBar.appendChild(controls);
@@ -193,23 +234,15 @@ class AiAssistantWindow {
         clearButton.addEventListener('click', async () => {
             if (this.aiUi && this.aiUi.aiChatWindow) {
                 try {
-                    // 发送清除历史记录的请求
-                    const response = await fetch('/comfy_ai_assistant/clear_history', {
-                        method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/json'
-                        },
-                        body: JSON.stringify({
-                            service: this.aiUi.aiService.service
-                        })
-                    });
-
-                    if (!response.ok) {
-                        throw new Error('清除历史记录失败');
-                    }
-
-                    // 重新加载聊天窗口
+                    // 使用 aiService 的 clearHistory 方法
+                    await this.aiUi.aiService.clearHistory();
+                    
+                    // 清除成功后重新加载聊天窗口
                     await this.aiUi.aiChatWindow.loadHistory();
+                    
+                    // 可以添加一个成功提示
+                    console.log('历史记录已清除');
+                    
                 } catch (error) {
                     console.error('清除历史记录失败:', error);
                 }

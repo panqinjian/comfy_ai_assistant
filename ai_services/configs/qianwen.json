@@ -1,7 +1,8 @@
 {
-    "model": "DEEPSEEK-R1",
+    "model": "通义千问 Max",
     "temperature": "1",
     "max_tokens": "8192",
     "timeout": "3000",
-    "proxy": ""
+    "proxy": "",
+    "api_key": ""
 }

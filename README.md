@@ -1,5 +1,8 @@
 # ComfyUI AI Assistant
 
+今天发现阿里已经有一个同样的项目：https://github.com/AIDC-AI/ComfyUI-Copilot/tree
+大公司做的产品肯定效果好，我个人做起来效率不行，效果也达不到要求，以后这个项目将不在更新
+
 ComfyUI AI Assistant 是一个集成于 ComfyUI 的 AI 助手扩展，支持多种 AI 服务，包括本地模型、云端 API 以及免费开源模型服务。助手可以回答问题、协助工作流创建以及处理图像等任务。
 
 ## 功能特点

@@ -2,7 +2,14 @@
 服务基类定义
 """
 
-class BaseService:
+import base64
+import os
+from urllib.parse import urlparse
+from abc import ABC, abstractmethod
+
+import aiohttp
+
+class BaseService(ABC):
     """服务基类"""
     
     def __init__(self):
@@ -54,18 +61,23 @@ class BaseService:
         """设置API版本"""
         self.api_version = api_version
     
-    async def send_message(self, message, **kwargs):
+    @abstractmethod
+    async def send_message(self, message, stream=False, images=None, host_url=None, history=None, prompt=None):
         """
-        发送消息
+        发送消息的抽象方法
         
         Args:
             message: 消息内容
-            **kwargs: 额外参数，如stream=True用于流式输出
+            stream: 是否使用流式响应
+            images: 图片列表
+            host_url: 主机URL（用于处理相对路径的图片）
+            history: 对话历史记录，用于保持上下文
+            prompt: 系统提示词
             
         Returns:
-            消息响应或生成器（流式输出时）
+            AI 回复
         """
-        raise NotImplementedError
+        raise NotImplementedError("子类必须实现send_message方法")
     
     async def get_models(self):
         """
@@ -141,3 +153,54 @@ class BaseService:
         
         # 调用流式发送消息
         return await self.send_message(user_message, stream=True) 
+    
+    async def _process_image(self, image_path, host_url=None):
+        """
+        处理图片，将本地路径转换为 base64 或处理远程 URL
+
+        Args:
+            image_path: 图片路径或 URL
+            host_url: 主机 URL（用于处理相对路径）
+
+        Returns:
+            处理后的图片数据（base64 或 URL）
+        """
+        try:
+            # 检查是否是完整的外部 URL
+            parsed = urlparse(image_path)
+            if parsed.scheme in ('http', 'https') and not host_url:
+                return image_path
+
+            # 处理 ComfyUI API 或本地图片
+            async with aiohttp.ClientSession() as session:
+                if image_path.startswith('/api/view') and host_url:
+                    # 处理 ComfyUI API 格式的 URL
+                    base_path = image_path.split('&amp;rand=')[0]  # 移除随机参数
+
+                    # 将 URL 对象转换为字符串
+                    host_url_str = str(host_url)
+                    if host_url_str.endswith('/'):
+                        host_url_str = host_url_str[:-1]
+
+                    full_url = f"{host_url_str}{base_path}"
+
+                    # 获取图片内容
+                    async with session.get(full_url) as response:
+                        if response.status != 200:
+                            raise Exception(f"获取图片失败: HTTP {response.status}")
+                        image_data = await response.read()
+
+                        # 转换为 base64
+                        encoded_string = base64.b64encode(image_data).decode('utf-8')
+                        return f"data:image/jpeg;base64,{encoded_string}"
+
+                elif os.path.isfile(image_path):
+                    # 处理本地文件
+                    with open(image_path, 'rb') as image_file:
+                        encoded_string = base64.b64encode(image_file.read()).decode('utf-8')
+                        return f"data:image/jpeg;base64,{encoded_string}"
+                else:
+                    raise Exception(f"无效的图片路径: {image_path}")
+
+        except Exception as e:
+            raise Exception(f"处理图片失败: {str(e)}")

@@ -11,6 +11,7 @@ class AiService {
         this.service_list = [];
         this.ai_params = {};
         this.config = null;
+        this.isProcessing = false; // 添加处理状态标志
     }
 
     /**
@@ -75,26 +76,32 @@ class AiService {
      * 获取历史记录
      * @returns {Promise<Array>} 历史记录数组
      */
-    async getHistory() {
+    async getHistory(pageSize = 10, lastMessageId = null) {
         try {
-            // 先获取当前配置以获取服务ID
-            const config = await this.getConfig();
-            const serviceId = config.service || '';
+            let url = `${this.baseUrl}/history?limit=${pageSize}`;
+            if (lastMessageId) {
+                url += `&message_id=${lastMessageId}`;
+            }
             
-            // 请求历史记录
-            const response = await fetch(`${this.baseUrl}/history?service=${serviceId}`);
+            const response = await fetch(url);
             
             if (!response.ok) {
                 throw new Error(`HTTP error! status: ${response.status}`);
             }
             
             const data = await response.json();
+            console.log('获取历史记录成功:', data);
             
             if (!data.success) {
                 throw new Error(data.error || '获取历史记录失败');
             }
             
-            return data.history || [];
+            // 确保返回的数据结构正确
+            return {
+                records: data.data || [],
+                hasMore: Boolean(data.has_more),  // 确保是布尔值
+                nextId: Number(data.next_id) || null  // 确保是数字或 null
+            };
         } catch (error) {
             console.error('获取历史记录失败:', error);
             throw error;
@@ -107,19 +114,8 @@ class AiService {
      */
     async clearHistory() {
         try {
-            // 先获取当前配置以获取服务ID
-            const config = await this.getConfig();
-            const serviceId = config.service || '';
-            
-            // 请求清除历史记录
             const response = await fetch(`${this.baseUrl}/clear_history`, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({
-                    service: serviceId
-                })
+                method: 'GET'  // 改为 GET 请求
             });
             
             if (!response.ok) {
@@ -127,6 +123,7 @@ class AiService {
             }
             
             const data = await response.json();
+            console.log('清除历史记录成功:', data);
             
             if (!data.success) {
                 throw new Error(data.error || '清除历史记录失败');
@@ -145,16 +142,19 @@ class AiService {
      * @param {Array} images - 图片列表（可选）
      * @returns {Promise<Object>} 响应结果
      */
-    async sendMessage(message, images = []) {
+    async sendMessage(message, images = [], history_list = 0, currentPromptId = "") {
         try {
             // 获取当前服务ID
             const serviceId = this.service || '';
             
-            // 构建请求数据 - 只发送消息内容和服务ID，让后端处理参数
+            // 构建请求数据
             const requestData = {
                 message: message,
-                service: serviceId
+                service: serviceId,
+                history: history_list,
+                currentPromptId: currentPromptId
             };
+            console.error('发送消息:', requestData);
             
             // 如果有图片，添加到请求数据中
             if (images && images.length > 0) {
@@ -175,6 +175,7 @@ class AiService {
             }
             
             const data = await response.json();
+            console.error('发送消息成功:', data);
             
             if (!data.success) {
                 throw new Error(data.error || '发送消息失败');
@@ -245,7 +246,7 @@ class AiService {
             // 先获取当前配置以获取服务ID
             let serviceId = null;
             if (selectedService==null) {
-                const config = this.Config;
+                const config = this.config;
                 serviceId = this.service;
             } else {
                 serviceId = selectedService;
@@ -281,28 +282,190 @@ class AiService {
 
     /**
      * 保存历史记录
-     * @param {Array} history - 历史记录数组
-     * @returns {Promise<boolean>} 是否保存成功
+     * @param {Object} historyData - 历史记录数据
+     * @returns {Promise<Object>} 保存结果
      */
-    async saveHistory(history) {
+    async saveHistory(historyData) {
         try {
-            // 获取当前服务ID
-            const serviceId = this.service || '';
-            
-            // 构建请求数据
-            const requestData = {
-                service: serviceId,
-                history: history
-            };
-            
-            // 发送保存历史请求
             const response = await fetch(`${this.baseUrl}/save_history`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json'
                 },
-                body: JSON.stringify(requestData)
+                body: JSON.stringify(historyData)  // 直接使用传入的数据结构
             });
+
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
+
+            const result = await response.json();
+            
+            if (!result.success) {
+                throw new Error(result.error || '保存历史记录失败');
+            }
+            
+            return result;
+        } catch (error) {
+            console.error('保存历史记录失败:', error);
+            throw error;
+        }
+    }
+
+    /**
+     * 重置服务状态
+     * 用于清除可能导致AI卡住的状态
+     */
+    resetState() {
+        console.log("重置AI服务状态...");
+        
+        // 重置处理状态标志
+        this.isProcessing = false;
+        
+        // 重置临时缓存但保留基本配置
+        const serviceId = this.service;
+        
+        // 记录当前服务ID，重置后恢复
+        this.currentServiceId = null;
+        this.service = null;
+        
+        // 暂存并清除当前配置
+        const savedConfig = this.config;
+        this.config = null;
+        
+        // 清除临时数据，但保留基本服务列表
+        const savedServiceList = this.service_list;
+        const savedServiceIdList = this.service_ID_list;
+        
+        this.service_list = [];
+        this.service_ID_list = [];
+        this.ai_params = {};
+        
+        // 恢复服务列表
+        this.service_list = savedServiceList;
+        this.service_ID_list = savedServiceIdList;
+        
+        // 如果有配置，恢复服务ID
+        if (savedConfig) {
+            this.service = serviceId;
+        }
+        
+        console.log("AI服务状态已重置");
+    }
+
+    /**
+     * 获取所有系统提示词
+     */
+    async getPrompts() {
+        try {
+            const response = await fetch('/comfy_ai_assistant/get_prompts');
+            const data = await response.json();
+            if (data.success) {
+                return data.prompts;
+            } else {
+                throw new Error(data.error);
+            }
+        } catch (error) {
+            console.error('获取提示词列表失败:', error);
+            throw error;
+        }
+    }
+
+    /**
+     * 获取当前或指定的系统提示词
+     */
+    async getPrompt(promptId) {
+        try {
+            const response = await fetch(`/comfy_ai_assistant/get_prompt?prompt_id=${promptId}`);
+            const data = await response.json();
+            if (data.success) {
+                // 解码 base64 内容
+                const content = atob(data.content);
+                return content;
+            } else {
+                throw new Error(data.error);
+            }
+        } catch (error) {
+            console.error('获取提示词内容失败:', error);
+            throw error;
+        }
+    }
+
+    /**
+     * 保存系统提示词
+     * @param {Object} promptData - 提示词数据
+     * @param {string} promptData.prompt_id - 提示词ID
+     * @param {string} promptData.prompt_name - 提示词名称
+     * @param {string} promptData.prompt_content_path - 提示词文件路径
+     * @param {string} promptData.prompt_content - 提示词内容
+     */
+    async savePrompt(promptData) {
+        try {
+            const { prompt_id, prompt_name, prompt_content_path, prompt_content } = promptData;
+            
+            // 对内容进行 base64 编码
+            const content_base64 = btoa(prompt_content);
+            
+            const response = await fetch('/comfy_ai_assistant/set_prompt', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    prompt_id,
+                    prompt_name,
+                    prompt_content_path,
+                    prompt_content: content_base64
+                })
+            });
+            
+            const data = await response.json();
+            if (data.success) {
+                return true;
+            } else {
+                throw new Error(data.error);
+            }
+        } catch (error) {
+            console.error('保存提示词失败:', error);
+            throw error;
+        }
+    }
+
+    /**
+     * 删除系统提示词
+     */
+    async deletePrompt(promptId) {
+        try {
+            const response = await fetch('/comfy_ai_assistant/delete_prompt', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    prompt_id: promptId
+                })
+            });
+            
+            const data = await response.json();
+            if (data.success) {
+                return true;
+            } else {
+                console.error('删除提示词失败:', data.error);
+                return false;
+            }
+        } catch (error) {
+            console.error('删除提示词失败:', error);
+            return false;
+        }
+    }
+
+    /**
+     * 获取会话信息
+     * @returns {Promise<Object>} 会话信息
+     */
+    async getSessionInfo() {
+        try {
+            const response = await fetch(`${this.baseUrl}/sessions`);
             
             if (!response.ok) {
                 throw new Error(`HTTP error! status: ${response.status}`);
@@ -311,17 +474,17 @@ class AiService {
             const data = await response.json();
             
             if (!data.success) {
-                throw new Error(data.error || '保存历史记录失败');
+                throw new Error(data.error || '获取会话信息失败');
             }
             
-            console.log('历史记录保存成功');
-            return true;
+            return data.data;
         } catch (error) {
-            console.error('保存历史记录失败:', error);
-            return false;
+            console.error('获取会话信息失败:', error);
+            throw error;
         }
     }
+
 }
 
 // 导出服务实例
-export default new AiService(); 
+export default new AiService();

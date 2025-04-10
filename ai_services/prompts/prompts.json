@@ -1,0 +1,20 @@
+{
+    "prompts": [
+        {
+            "prompt_id": "comfyui_workflow",
+            "prompt_name": "comfyui工作流处理(请在输入框具体输入你的需求)",
+            "prompt_content_path": "comfyui_workflow.ini",
+            "prompt_fun_path": "fun_comfyui_handlers.py",
+            "prompt_fun": "fun_process_workflow_response"
+        },
+        {
+            "prompt_id": "auto_ffmpeg",
+            "prompt_name": "帮我使用ffmpeg处理视频",
+            "prompt_content_path": "auto_ffmpeg.ini",
+            "prompt_fun_path": "fun_media_handlers.py",
+            "prompt_fun": "fun_process_ffmpeg_command",
+            "prompt_run_path": "run_media_handlers.py",
+            "prompt_run": "run_process_ffmpeg_command"
+        }
+    ]
+}

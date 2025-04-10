@@ -293,93 +293,6 @@ class AiChatWindow {
                 align-items: center
             `;
             
-            // 创建添加当前错误按钮
-            const errorButton = document.createElement('button');
-            errorButton.className = 'ai-error-button';
-            errorButton.title = '添加当前错误';
-            errorButton.style.cssText = `
-                padding: 8px;
-                margin-right: 10px;
-                background-color: transparent;
-                border: none;
-                border-radius: 4px;
-                color: #ffffff;
-                cursor: pointer;
-                transition: background-color 0.3s;
-                display: flex;
-                align-items: center;
-                justify-content: center;
-            `;
-            
-            // 错误图标
-            errorButton.innerHTML = `
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                    <path d="M12 22C6.477 22 2 17.523 2 12S6.477 2 12 2s10 4.477 10 10-4.477 10-10 10zm-1-7v2h2v-2h-2zm0-8v6h2V7h-2z" fill="#ff5555"/>
-                </svg>
-            `;
-            
-            errorButton.addEventListener('mouseover', () => {
-                errorButton.style.backgroundColor = '#6a6a7a';
-            });
-            errorButton.addEventListener('mouseout', () => {
-                errorButton.style.backgroundColor = '#5a5a6a';
-            });
-            
-            errorButton.addEventListener('click', () => {
-                try {
-                    let errorFound = false;
-                    let errorText = '';
-                    
-                    // 1. 首先检查错误模态框
-                    const errorModal = document.querySelector('.comfy-modal');
-                    if (errorModal && errorModal.style.display === 'flex') {
-                        errorText = errorModal.querySelector('p')?.textContent || '未找到具体错误信息';
-                        errorFound = true;
-                    } 
-                    
-                    // 2. 如果没找到错误模态框，检查Toast警告消息
-                    if (!errorFound) {
-                        const toastWarning = document.querySelector('.p-toast-message-warn');
-                        if (toastWarning) {
-                            // 尝试获取详细信息
-                            const detailElement = toastWarning.querySelector('.p-toast-detail');
-                            if (detailElement) {
-                                errorText = detailElement.textContent || '';
-                                errorFound = true;
-                            }
-                            
-                            // 如果没有找到详细信息或详细信息为空，尝试获取摘要
-                            if (!errorText) {
-                                const summaryElement = toastWarning.querySelector('.p-toast-summary');
-                                if (summaryElement) {
-                                    errorText = summaryElement.textContent || '未找到具体错误信息';
-                                    errorFound = true;
-                                }
-                            }
-                        }
-                    }
-                    
-                    if (errorFound) {
-                        // 将错误信息添加到输入框
-                        const currentValue = this.input.value;
-                        const errorMessage = `错误提示：${errorText}`;
-                        this.input.value = currentValue + (currentValue ? '\n' : '') + errorMessage + '\n';
-                        
-                        // 调整输入框高度
-                        this.input.style.height = 'auto';
-                        this.input.style.height = Math.min(this.input.scrollHeight, 120) + 'px';
-                        
-                        // 显示成功提示
-                        this.showNotification('当前错误已添加到输入框', 'success');
-                    } else {
-                        this.showNotification('当前没有错误信息', 'warning');
-                    }
-                } catch (error) {
-                    console.error('获取错误信息失败:', error);
-                    this.showNotification('获取错误信息失败: ' + error.message, 'error');
-                }
-            });
-            
             // 创建添加当前工作流按钮
             const workflowButton = document.createElement('button');
             workflowButton.className = 'ai-workflow-button';
@@ -423,7 +336,8 @@ class AiChatWindow {
                         // 将工作流JSON添加到输入框中（去除换行符）
                         const currentValue = this.input.value;
                         const cleanJSON = jsonString.replace(/\n/g, ' ');
-                        this.input.value = currentValue + (currentValue ? '\n' : '') +  `我的工作流：${cleanJSON}`+'\n';
+                        this.input.value = currentValue + (currentValue ? '\n\n' : '') + cleanJSON;
+                        
                         // 调整输入框高度
                         this.input.style.height = 'auto';
                         this.input.style.height = Math.min(this.input.scrollHeight, 120) + 'px';
@@ -512,7 +426,6 @@ class AiChatWindow {
             textareaContainer.appendChild(promptTagContainer);
             
             // 添加按钮到按钮容器
-            buttonsContainer.appendChild(errorButton);
             buttonsContainer.appendChild(workflowButton);
             buttonsContainer.appendChild(imageButton);
             buttonsContainer.appendChild(sendButton);
